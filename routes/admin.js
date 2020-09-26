@@ -6,10 +6,14 @@ const productsController = require('../controllers/products');
 
 const router = express.Router();
 
-// /admin/add-product => GET
+/**
+ * @GET("/admin/add-product")
+ */
 router.get('/add-product', productsController.getAddProduct);
 
-// /admin/add-product => POST
+/**
+ * @POST("/admin/add-product")
+ */
 router.post('/add-product', productsController.postAddProduct);
 
 module.exports = router;
