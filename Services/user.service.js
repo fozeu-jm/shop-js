@@ -1,3 +1,4 @@
+const User = require("../models/user");
 const Product = require('../models/product');
 const Order = require('../models/order');
 
@@ -31,7 +32,8 @@ exports.addToCart = (req) => {
 };
 
 exports.getCartContent = (user) => {
-    return user.populate('cart.items.productId').execPopulate()
+    return user.populate('cart.items.productId')
+        .execPopulate()
         .then(user => {
             return user.cart.items.map(item => {
                 return {
@@ -54,6 +56,10 @@ exports.removeFromCart = (req) => {
 };
 
 exports.placeOrder = (user) => {
+    /**
+     * populate() fetches data with corresponding id from db and populates productId field in the object with th data
+     * second argument selects which fields to populate from the db
+     */
     return user.populate('cart.items.productId', 'title price').execPopulate()
         .then(user => {
             const cartContent = user.cart.items.map(item => {
@@ -66,17 +72,42 @@ exports.placeOrder = (user) => {
             });
             user.cart.items = [];
             console.log(cartContent);
-            return user.save().then( res => {
-                    const order = new Order({items: cartContent, userId: user._id});
-                    return order.save();
-                }).catch( err => {
-                    //console.log(err);
-                });
+            return user.save().then(res => {
+                const order = new Order({items: cartContent, userId: user._id});
+                return order.save();
+            }).catch(err => {
+                //console.log(err);
+            });
         }).catch(err => {
-        console.log(err);
-    });
+            console.log(err);
+        });
 };
 
 exports.getOrders = () => {
     return Order.find();
+};
+
+exports.signUp = (req) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+
+    return new Promise((resolve, reject) => {
+        User.findOne({email: email}).then(user => {
+            //check if user exist
+            if (user) {
+                reject("User with same email already exist");
+            }else{
+                //if not...
+                const newUser = new User({email: email, password: password, cart: {items: []}});
+                newUser.save().then( result => {
+                    resolve("Success !");
+                });
+            }
+        }).catch(err => {
+            console.log(err);
+        });
+    });
+
+
 };

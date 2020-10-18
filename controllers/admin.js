@@ -41,10 +41,8 @@ exports.getEditProduct = (req, res, next) => {
 exports.postEditProduct = (req, res, next) => {
     productService.updateProduct(req)
         .then(result => {
-            console.log('UPDATED PRODUCT!');
             res.redirect('/admin/products');
-        })
-        .catch(err => console.log(err));
+        }).catch(err => console.log(err));
 };
 
 exports.getProducts = (req, res, next) => {
@@ -55,15 +53,12 @@ exports.getProducts = (req, res, next) => {
                 pageTitle: 'Admin Products',
                 path: '/admin/products'
             });
-        })
-        .catch(err => console.log(err));
+        }).catch(err => console.log(err));
 };
 
 exports.postDeleteProduct = (req, res, next) => {
     productService.DeleteProduct(req)
         .then(() => {
-            console.log('DESTROYED PRODUCT');
             res.redirect('/admin/products');
-        })
-        .catch(err => console.log(err));
+        }).catch(err => console.log(err));
 };
