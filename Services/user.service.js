@@ -108,6 +108,4 @@ exports.signUp = (req) => {
             console.log(err);
         });
     });
-
-
 };

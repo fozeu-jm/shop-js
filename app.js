@@ -26,7 +26,6 @@ const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 
 
-
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -54,17 +53,7 @@ app.use(authRoutes);
 app.use(errorController.get404);
 
 mongoose.connect(MONGODB_URI).then((result) => {
-        // User.findOne().then(user => {
-        //     if (!user) {
-        //         const user = new User({
-        //             name: 'Jean Marie',
-        //             email: 'fozeu.jm@gmail.com',
-        //             cart: {items: []}
-        //         });
-        //         user.save();
-        //     }
-        // });
-        app.listen(3000);
-    }).catch(err => {
+    app.listen(3000);
+}).catch(err => {
     console.log(err);
 });
