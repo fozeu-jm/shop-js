@@ -54,7 +54,6 @@ exports.getCart = (req, res, next) => {
 };
 
 exports.postCart = (req, res, next) => {
-
     userService.addToCart(req)
         .then((result) => {
             console.log(result);
@@ -71,18 +70,17 @@ exports.postCartDeleteProduct = (req, res, next) => {
 };
 
 exports.postOrder = (req, res, next) => {
-    userService.placeOrder(req.user).then( result => {
+    userService.placeOrder(req.user).then(result => {
         res.redirect('/orders');
     }).catch(err => console.log(err));
 };
 
 exports.getOrders = (req, res, next) => {
     userService.getOrders().then(orders => {
-            res.render('shop/orders', {
-
-                path: '/orders',
-                pageTitle: 'Your Orders',
-                orders: orders
-            });
-        }).catch(err => console.log(err));
+        res.render('shop/orders', {
+            path: '/orders',
+            pageTitle: 'Your Orders',
+            orders: orders
+        });
+    }).catch(err => console.log(err));
 };
