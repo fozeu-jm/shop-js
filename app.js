@@ -10,7 +10,7 @@ const User = require('./models/user');
 const session = require("express-session");
 const MongoDbStore = require("connect-mongodb-session")(session);
 
-const MONGODB_URI = 'mongodb+srv://kaizer_web:Jeanmarie1234@cluster0.oh2g2.mongodb.net/shop?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 const app = express();
 const store = new MongoDbStore({
@@ -39,7 +39,7 @@ app.use(
 );
 
 app.use((req, res, next) => {
-    User.findById('5f7127203d1eab4278498d78')
+    User.findById('5f8ca4896fed5e29c08fe6a9')
         .then(user => {
             req.user = user;
             next();

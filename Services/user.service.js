@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const Product = require('../models/product');
 const Order = require('../models/order');
+const bcrypt = require('bcryptjs')
 
 exports.addToCart = (req) => {
     let user = req.user;
@@ -97,15 +98,34 @@ exports.signUp = (req) => {
             //check if user exist
             if (user) {
                 reject("User with same email already exist");
-            }else{
+            } else {
                 //if not...
-                const newUser = new User({email: email, password: password, cart: {items: []}});
-                newUser.save().then( result => {
-                    resolve("Success !");
+                bcrypt.hash(password, 12).then((hashedPass) => {
+                    const newUser = new User({email: email, password: hashedPass, cart: {items: []}});
+                    newUser.save().then(result => {
+                        resolve("Success !");
+                    });
                 });
             }
         }).catch(err => {
             console.log(err);
+        });
+    });
+};
+
+exports.signIn = (req) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    return new Promise((resolve, reject) => {
+        User.findOne({email: email}).then( user => {
+            if(!user){
+                reject(404);
+            }
+            bcrypt.compare(password, user.password).then(match => {
+                match ? resolve(user) : reject(404);
+            }).catch(err => {reject(500)})
+        }).catch(err => {
+            reject(500);
         });
     });
 };
