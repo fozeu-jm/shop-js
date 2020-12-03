@@ -1,6 +1,9 @@
 const productService = require('../Services/product.service');
 
 exports.getAddProduct = (req, res, next) => {
+    if(!req.session.isLoggedIn){
+        res.redirect("/login");
+    }
     res.render('admin/edit-product', {
         pageTitle: 'Add Product',
         path: '/admin/add-product',
@@ -36,8 +39,7 @@ exports.getEditProduct = (req, res, next) => {
                 product: product,
                 isAuthenticated: req.session.isLoggedIn || false
             });
-        })
-        .catch(err => console.log(err));
+        }).catch(err => console.log(err));
 };
 
 exports.postEditProduct = (req, res, next) => {

@@ -95,7 +95,6 @@ exports.signUp = (req) => {
 
     return new Promise((resolve, reject) => {
         User.findOne({email: email}).then(user => {
-            //check if user exist
             if (user) {
                 reject("User with same email already exist");
             } else {
