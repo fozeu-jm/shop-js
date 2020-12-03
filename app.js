@@ -9,7 +9,7 @@ const User = require('./models/user');
 
 const session = require("express-session");
 const MongoDbStore = require("connect-mongodb-session")(session);
-
+const csrf = require("csurf");
 const MONGODB_URI = process.env.MONGODB_URI;
 
 const app = express();
@@ -38,12 +38,24 @@ app.use(
     })
 );
 
+const csrfProtection = csrf(options = {})
+app.use(csrfProtection);
+
 app.use((req, res, next) => {
-    User.findById('5f8ca4896fed5e29c08fe6a9')
+    if (!req.session.user) {
+        return next();
+    }
+    User.findById(req.session.user._id)
         .then(user => {
             req.user = user;
             next();
         }).catch(err => console.log(err));
+});
+
+app.use((req, res, next) => {
+    res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
 });
 
 app.use('/admin', adminRoutes);
