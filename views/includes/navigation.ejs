@@ -33,6 +33,7 @@
                 <li class="main-header__item">
                     <form action="/logout" method="post">
                         <button type="submit">Logout</button>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     </form>
                 </li>
             <% } %>
@@ -86,6 +87,7 @@
             <li class="mobile-nav__item">
                 <form action="/logout" method="post">
                     <button type="submit">Logout</button>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 </form>
             </li>
         <% } %>

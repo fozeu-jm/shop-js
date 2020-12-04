@@ -10,6 +10,7 @@ const User = require('./models/user');
 const session = require("express-session");
 const MongoDbStore = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
+const flash = require("connect-flash") ;
 const MONGODB_URI = process.env.MONGODB_URI;
 
 const app = express();
@@ -51,6 +52,7 @@ app.use((req, res, next) => {
             next();
         }).catch(err => console.log(err));
 });
+app.use(flash());
 
 app.use((req, res, next) => {
     res.locals.isAuthenticated = req.session.isLoggedIn;

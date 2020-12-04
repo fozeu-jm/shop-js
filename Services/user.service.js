@@ -84,8 +84,8 @@ exports.placeOrder = (user) => {
         });
 };
 
-exports.getOrders = () => {
-    return Order.find();
+exports.getOrders = (req) => {
+    return Order.find({userId: req.user._id});
 };
 
 exports.signUp = (req) => {
@@ -94,6 +94,9 @@ exports.signUp = (req) => {
     const confirmPassword = req.body.confirmPassword;
 
     return new Promise((resolve, reject) => {
+        if(password !== confirmPassword){
+            reject("Passwords do not match. Try again !");
+        }
         User.findOne({email: email}).then(user => {
             if (user) {
                 reject("User with same email already exist");
@@ -102,11 +105,15 @@ exports.signUp = (req) => {
                 bcrypt.hash(password, 12).then((hashedPass) => {
                     const newUser = new User({email: email, password: hashedPass, cart: {items: []}});
                     newUser.save().then(result => {
-                        resolve("Success !");
+                        resolve("User account created successfully !");
                     });
-                });
+                }).catch(err => {
+                    reject("An error occurred during sign up process please try again later.")
+                    console.log(err);
+                });;
             }
         }).catch(err => {
+            reject("An error occurred during sign up process please try again later.")
             console.log(err);
         });
     });
@@ -118,13 +125,13 @@ exports.signIn = (req) => {
     return new Promise((resolve, reject) => {
         User.findOne({email: email}).then( user => {
             if(!user){
-                reject(404);
+                reject("Invalid email or password.");
             }
-            bcrypt.compare(password, user.password).then(match => {
-                match ? resolve(user) : reject(404);
-            }).catch(err => {reject(500)})
+            bcrypt.compare(password, user.password).then(doMatch => {
+                doMatch ? resolve(user) : reject("Invalid email or password.");
+            }).catch(err => {reject("An error occured during authentication. Try again later.")})
         }).catch(err => {
-            reject(500);
+            reject("An error occured during authentication. Try again later");
         });
     });
 };
