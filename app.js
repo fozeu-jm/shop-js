@@ -39,7 +39,8 @@ app.use(
     })
 );
 
-const csrfProtection = csrf(options = {})
+const csrfProtection = csrf(options = {});
+
 app.use(csrfProtection);
 
 app.use((req, res, next) => {

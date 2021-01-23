@@ -8,7 +8,7 @@
 
     <main>
         <% if(errorMessage || successMessage) {%>
-            <div class="message <% errorMessage ? 'message-error' : ''%>">
+            <div class="message <%= errorMessage ? 'message-error' : ''%>">
                 <%= errorMessage ? errorMessage : ''%>
                 <%= successMessage ? successMessage : ''%>
             </div>
@@ -25,5 +25,8 @@
             </div>
             <button class="btn" type="submit">Login</button>
         </form>
+            <div class="centered">
+                <a href="/reset">Forgot password ?</a>
+            </div>
     </main>
 <%- include('../includes/end.ejs') %>

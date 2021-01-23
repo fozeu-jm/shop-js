@@ -1,4 +1,5 @@
 const userService = require("../Services/user.service");
+const authService = require("../Services/auth.service");
 
 exports.getLogin = (req, res, next) => {
     let error = req.flash("error");
@@ -58,5 +59,71 @@ exports.postSignup = (req, res, next) => {
     }).catch(err => {
         req.flash("error", err);
         res.redirect("/signup");
+    });
+};
+
+exports.getReset = (req, res, next) => {
+    let error = req.flash("error");
+    if(error.length <= 0){
+        error = null;
+    }
+
+    let success = req.flash("success");
+    if(success.length <= 0){
+        success = null;
+    }
+    res.render('auth/reset', {
+        path: '/reset',
+        pageTitle: 'Reset Password',
+        errorMessage: error,
+        successMessage: success,
+        isAuthenticated: req.session.isLoggedIn || false
+    });
+};
+
+exports.postReset = (req, res, next) => {
+    userService.resetPassword(req).then(res => {
+        res.redirect("/");
+    }).catch(err => {
+        res.redirect("/reset");
+    });
+};
+
+exports.getNewPassword = (req, res, next) => {
+    let error = req.flash("error");
+    if(error.length <= 0){
+        error = null;
+    }
+
+    let success = req.flash("success");
+    if(success.length <= 0){
+        success = null;
+    }
+    authService.findUserByToken(req.params.token).then(user => {
+        res.render('auth/new-password', {
+            path: '/new-password',
+            pageTitle: 'New Password',
+            userId : user._id.toString(),
+            errorMessage: error,
+            successMessage: success,
+            isAuthenticated: req.session.isLoggedIn || false
+        });
+    }).catch(err => {
+        if(err === "588"){
+            req.flash("error", "Linked expired");
+            return res.redirect("/login");
+        }
+        req.flash("error", "An error occured !");
+        console.log(err);
+        return res.redirect("/login");
+    })
+
+};
+
+exports.PostNewPassword = (req, res, next) => {
+    userService.SaveNewPassword(req).then(res => {
+        res.redirect("/login");
+    }).catch(err => {
+        res.redirect("/login");
     });
 };
