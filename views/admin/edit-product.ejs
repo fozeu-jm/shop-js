@@ -18,6 +18,7 @@
             </div>
             <div class="form-control">
                 <label for="price">Price</label>
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <input type="number" name="price" id="price" step="0.01" value="<% if (editing) { %><%= product.price %><% } %>">
             </div>
             <div class="form-control">

@@ -1,7 +1,10 @@
 const User = require("../models/user");
 const Product = require('../models/product');
 const Order = require('../models/order');
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcryptjs');
+const mailer = require("./Mailer.Service");
+const auth = require("./auth.service");
+const {validationResult} = require("express-validator/check")
 
 exports.addToCart = (req) => {
     let user = req.user;
@@ -84,30 +87,31 @@ exports.placeOrder = (user) => {
         });
 };
 
-exports.getOrders = () => {
-    return Order.find();
+exports.getOrders = (req) => {
+    return Order.find({userId: req.user._id});
 };
 
 exports.signUp = (req) => {
     const email = req.body.email;
     const password = req.body.password;
-    const confirmPassword = req.body.confirmPassword;
 
     return new Promise((resolve, reject) => {
-        User.findOne({email: email}).then(user => {
-            if (user) {
-                reject("User with same email already exist");
-            } else {
-                //if not...
-                bcrypt.hash(password, 12).then((hashedPass) => {
-                    const newUser = new User({email: email, password: hashedPass, cart: {items: []}});
-                    newUser.save().then(result => {
-                        resolve("Success !");
-                    });
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return reject(errors.array());
+        }
+        bcrypt.hash(password, 12).then((hashedPass) => {
+            const newUser = new User({email: email, password: hashedPass, cart: {items: []}});
+            newUser.save().then(result => {
+                mailer.signUpEmail(email).then(res => {
+                }).catch(err => {
+                    console.log(err);
                 });
-            }
+                return resolve("User account created successfully !");
+            });
         }).catch(err => {
             console.log(err);
+            return reject("An error occurred during sign up process please try again later.")
         });
     });
 };
@@ -116,15 +120,84 @@ exports.signIn = (req) => {
     const email = req.body.email;
     const password = req.body.password;
     return new Promise((resolve, reject) => {
-        User.findOne({email: email}).then( user => {
-            if(!user){
-                reject(404);
+        User.findOne({email: email}).then(user => {
+            if (!user) {
+                return reject("Invalid email or password.");
             }
-            bcrypt.compare(password, user.password).then(match => {
-                match ? resolve(user) : reject(404);
-            }).catch(err => {reject(500)})
+            bcrypt.compare(password, user.password).then(doMatch => {
+                return doMatch ? resolve(user) : reject("Invalid email or password.");
+            }).catch(err => {
+                return reject("An error occured during authentication. Try again later.")
+            })
         }).catch(err => {
-            reject(500);
+            return reject("An error occured during authentication. Try again later");
+        });
+    });
+};
+
+exports.resetPassword = (req) => {
+    return new Promise((resolve, reject) => {
+        User.findOne({email: req.body.email}).then(user => {
+            if (!user) {
+                req.flash('error', 'No account with that email found.');
+                reject('error');
+            }
+            auth.generateResetToken().then(token => {
+                user.resetToken = token;
+                user.resetTokenExpiration = Date.now() + 3600000;
+                user.save().then(res => {
+                    mailer.resetPasswordEmail(req.body.email, token).then(res => {
+                    }).catch(err => {
+                        console.log(err);
+                    });
+                    req.flash('success', 'An email was sent to reset your password');
+                    resolve("Success !");
+                }).catch(err => {
+                    req.flash('error', 'An unexpected error occurred, please try later.');
+                    reject(err);
+                });
+            }).catch(err => {
+                req.flash('error', 'An unexpected error occurred, please try later.');
+                reject(err);
+            });
+        }).catch(err => {
+            reject("Problem with query !");
+        });
+    });
+};
+
+exports.SaveNewPassword = (req) => {
+    const newPassword = req.body.password;
+    const userId = req.body.userId;
+    return new Promise((resolve, reject) => {
+        User.findById(userId).then(user => {
+            if (!user) {
+                req.flash('error', 'An error occurred, please try again later');
+                reject("err");
+            }
+            if (user.resetTokenExpiration < Date.now()) {
+                req.flash('error', 'An error occurred, please try again later');
+                reject("588");
+            }
+            bcrypt.hash(newPassword, 12).then((hashedPass) => {
+                user.password = hashedPass;
+                user.resetToken = undefined;
+                user.resetTokenExpiration = undefined;
+                user.save().then(res => {
+                    req.flash('success', 'Password changed successfully');
+                    resolve("success");
+                }).catch(err => {
+                    req.flash('error', 'An error occurred, please try again later');
+                    reject(err);
+                })
+            }).catch(err => {
+                req.flash('error', 'An error occurred, please try again later');
+                reject("An error occurred during sign up process please try again later.")
+                console.log(err);
+            });
+        }).catch(err => {
+            req.flash('error', 'An error occurred, please try again later');
+            reject(err);
         });
     });
 };
