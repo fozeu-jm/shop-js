@@ -48,6 +48,7 @@ exports.getSignup = (req, res, next) => {
         path: '/signup',
         pageTitle: 'Signup',
         errorMessage: error,
+        validationError: [],
         isAuthenticated: req.session.isLoggedIn || false
     });
 };
@@ -57,8 +58,22 @@ exports.postSignup = (req, res, next) => {
         req.flash("success", result);
         res.redirect("/login");
     }).catch(err => {
-        req.flash("error", err);
-        res.redirect("/signup");
+        const email = req.body.email;
+        const password = req.body.password;
+        const confirmPassword = req.body.confirmPassword;
+        if(Array.isArray(err)){
+            return res.status(422).render('auth/signup', {
+                path: '/signup',
+                pageTitle: 'Signup',
+                errorMessage: null,
+                validationError: err,
+                isAuthenticated: req.session.isLoggedIn || false,
+                oldInput: {email:email, password:password, confirmPassword: confirmPassword}
+            });
+        }else{
+            req.flash("error", err);
+            res.redirect("/signup");
+        }
     });
 };
 

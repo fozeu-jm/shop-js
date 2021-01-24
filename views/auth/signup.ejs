@@ -1,32 +1,49 @@
 <%- include('../includes/head.ejs') %>
-    <link rel="stylesheet" href="/css/forms.css">
-    <link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/forms.css">
+<link rel="stylesheet" href="/css/auth.css">
 </head>
 
 <body>
-   <%- include('../includes/navigation.ejs') %>
+<%- include('../includes/navigation.ejs') %>
 
-    <main>
-        <% if(errorMessage) {%>
-            <div class="message message-error">
-                <%= errorMessage %>
-            </div>
-        <%}%>
-        <form class="login-form" action="/signup" method="POST">
-            <div class="form-control">
-                <label for="email">E-Mail</label>
-                <input type="email" name="email" id="email">
-            </div>
-            <div class="form-control">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            </div>
-            <div class="form-control">
-                <label for="confirmPassword">Confirm Password</label>
-                <input type="password" name="confirmPassword" id="confirmPassword">
-            </div>
-            <button class="btn" type="submit">Signup</button>
-        </form>
-    </main>
+<main>
+    <% if(errorMessage) { %>
+        <div class="message message-error">
+            <%= errorMessage %>
+        </div>
+    <% } %>
+    <form class="login-form" action="/signup" method="POST" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="form-control">
+            <label for="email">E-Mail</label>
+            <input
+            class="<%= validationError.find(e => e.param === 'email') ? 'invalid' : ''%>"
+            type="email"
+            name="email"
+            id="email"
+            value="<%= typeof oldInput !== 'undefined' ? oldInput.email : null %>"/>
+            <small class="error-info">
+                <% const emailError = validationError.find(e => e.param === 'email'); %>
+                <%= typeof emailError !== 'undefined' ? emailError.msg : ''%>
+            </small>
+        </div>
+        <div class="form-control">
+            <label for="password">Password</label>
+            <% const passError = validationError.find(e => e.param === 'password'); %>
+            <input
+                    class="<%= passError ? 'invalid' : ''%>"
+                    type="password" name="password" id="password"
+                   value="<%= typeof oldInput !== 'undefined' ? oldInput.password : null %>">
+            <small class="error-info">
+                <%= typeof passError !== 'undefined' ? passError.msg : ''%>
+            </small>
+        </div>
+        <div class="form-control">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" name="confirmPassword" id="confirmPassword"
+                   value="<%= typeof oldInput !== 'undefined' ? oldInput.confirmPassword : null %>">
+        </div>
+        <button class="btn" type="submit">Signup</button>
+    </form>
+</main>
 <%- include('../includes/end.ejs') %>
