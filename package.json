@@ -26,6 +26,7 @@
     "mongodb": "^3.6.2",
     "mongoose": "^5.10.7",
     "nodemailer": "^6.4.17",
-    "nodemailer-sendgrid-transport": "^0.2.0"
+    "nodemailer-sendgrid-transport": "^0.2.0",
+    "winston": "^3.3.3"
   }
 }
