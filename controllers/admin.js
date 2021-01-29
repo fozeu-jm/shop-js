@@ -1,12 +1,15 @@
 const productService = require('../Services/product.service');
+const deleter = require("../util/deleter");
 
 exports.getAddProduct = (req, res, next) => {
-    if(!req.session.isLoggedIn){
-        res.redirect("/login");
+    let error = req.flash("error");
+    if(error.length <= 0){
+        error = null;
     }
     res.render('admin/edit-product', {
         pageTitle: 'Add Product',
         path: '/admin/add-product',
+        errorMessage: error,
         editing: false,
         isAuthenticated: req.session.isLoggedIn || false
     });
@@ -18,7 +21,8 @@ exports.postAddProduct = (req, res, next) => {
             res.redirect('/admin/products');
         })
         .catch(err => {
-            console.log(err);
+            req.flash('error', err);
+            res.redirect('/admin/add-product');
         });
 };
 
@@ -26,6 +30,10 @@ exports.getEditProduct = (req, res, next) => {
     const editMode = req.query.edit;
     if (!editMode) {
         return res.redirect('/');
+    }
+    let error = req.flash("error");
+    if(error.length <= 0){
+        error = null;
     }
     productService.findProductById(req)
         .then(product => {
@@ -36,6 +44,7 @@ exports.getEditProduct = (req, res, next) => {
                 pageTitle: 'Edit Product',
                 path: '/admin/edit-product',
                 editing: editMode,
+                errorMessage: error,
                 product: product,
                 isAuthenticated: req.session.isLoggedIn || false
             });
@@ -64,6 +73,7 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
     productService.DeleteProduct(req)
         .then(() => {
+
             res.redirect('/admin/products');
         }).catch(err => console.log(err));
 };

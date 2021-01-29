@@ -1,6 +1,7 @@
 const Product = require('../models/product');
 const productService = require('../Services/product.service');
 const userService = require('../Services/user.service');
+const PDFDocument = require("pdfkit");
 
 exports.getProducts = (req, res, next) => {
     productService.findAllProducts()
@@ -87,4 +88,11 @@ exports.getOrders = (req, res, next) => {
             isAuthenticated: req.session.isLoggedIn || false
         });
     }).catch(err => console.log(err));
+};
+
+exports.printOrder = (req, res, next) => {
+    const result = productService.printOrder(req);
+    res.setHeader('content-Type', 'application/pdf');
+    res.setHeader("Content-Disposition", "inline; filename=".concat(result.filename))
+    result.file.pipe(res);
 };
