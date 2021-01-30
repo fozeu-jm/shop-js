@@ -6,6 +6,7 @@ const Order = require('../models/order');
 const path = require("path");
 const deleter = require("../util/deleter");
 const pdf = require("pdf-creator-node");
+const config = require("../util/config");
 
 exports.saveProduct = (req) => {
     const title = req.body.title;
@@ -31,10 +32,15 @@ exports.saveProduct = (req) => {
     });
 };
 
-exports.findAllProducts = () => {
+exports.findAllProducts = async (req) => {
     // can use Product.find().select('title price -_id') to select and exclude fields
     // .populate('userId', 'name');
-    return Product.find().populate('userId');
+    const page = parseInt(req.query.page || "1");
+    const limit = parseInt(req.query.limit || config.defaultElmtPerPage);
+    const startIndex = (page - 1) * limit;
+
+    return Product.find().skip(startIndex).limit(limit)
+        .populate('userId');
 };
 
 exports.findProductById = (req) => {

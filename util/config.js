@@ -15,3 +15,5 @@ const logConfiguration = {
 };
 const logger = winston.createLogger(logConfiguration);
 exports.logger = logger;
+
+exports.defaultElmtPerPage = "10";

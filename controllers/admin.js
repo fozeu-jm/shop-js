@@ -1,5 +1,7 @@
 const productService = require('../Services/product.service');
+const Product = require('../models/product');
 const deleter = require("../util/deleter");
+const config = require("../util/config");
 
 exports.getAddProduct = (req, res, next) => {
     let error = req.flash("error");
@@ -58,13 +60,23 @@ exports.postEditProduct = (req, res, next) => {
         }).catch(err => console.log(err));
 };
 
-exports.getProducts = (req, res, next) => {
-    productService.findAllProducts()
+exports.getProducts = async (req, res, next) => {
+    const totalItems = await Product.find().countDocuments();
+    const page = parseInt(req.query.page || "1");
+    const itemsPerPage = parseInt(req.query.limit || config.defaultElmtPerPage);
+    productService.findAllProducts(req)
         .then(products => {
             res.render('admin/products', {
                 prods: products,
                 pageTitle: 'Admin Products',
                 path: '/admin/products',
+                totalItems: totalItems,
+                hasNextPage: itemsPerPage * page < totalItems,
+                hasPreviousPage: page > 1,
+                currentPage: page,
+                nextPage: page + 1,
+                previousPage: page - 1,
+                lastPage: Math.ceil(totalItems / itemsPerPage),
                 isAuthenticated: req.session.isLoggedIn || false
             });
         }).catch(err => console.log(err));
