@@ -91,8 +91,9 @@ exports.getOrders = (req, res, next) => {
 };
 
 exports.printOrder = (req, res, next) => {
-    const result = productService.printOrder(req);
-    res.setHeader('content-Type', 'application/pdf');
-    res.setHeader("Content-Disposition", "inline; filename=".concat(result.filename))
-    result.file.pipe(res);
+    productService.printOrder(req).then(result => {
+        res.setHeader('content-Type', 'application/pdf');
+        res.setHeader("Content-Disposition", "inline; filename=".concat(result.filename))
+        result.file.pipe(res);
+    }).catch(err => console.log(err));
 };

@@ -3,7 +3,7 @@ const deleter = require("../util/deleter");
 
 exports.getAddProduct = (req, res, next) => {
     let error = req.flash("error");
-    if(error.length <= 0){
+    if (error.length <= 0) {
         error = null;
     }
     res.render('admin/edit-product', {
@@ -32,7 +32,7 @@ exports.getEditProduct = (req, res, next) => {
         return res.redirect('/');
     }
     let error = req.flash("error");
-    if(error.length <= 0){
+    if (error.length <= 0) {
         error = null;
     }
     productService.findProductById(req)
@@ -71,9 +71,7 @@ exports.getProducts = (req, res, next) => {
 };
 
 exports.postDeleteProduct = (req, res, next) => {
-    productService.DeleteProduct(req)
-        .then(() => {
-
-            res.redirect('/admin/products');
-        }).catch(err => console.log(err));
+    productService.DeleteProduct(req).then(() => {
+        res.redirect('/admin/products');
+    }).catch(err => console.log(err));
 };

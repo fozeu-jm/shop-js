@@ -1,8 +1,11 @@
 const Product = require('../models/product');
 const Tools = require("../util/config");
 const fs = require("fs");
-const path = require("path")
+const ejs = require("ejs");
+const Order = require('../models/order');
+const path = require("path");
 const deleter = require("../util/deleter");
+const pdf = require("pdf-creator-node");
 
 exports.saveProduct = (req) => {
     const title = req.body.title;
@@ -83,10 +86,55 @@ exports.DeleteProduct = (req) => {
     });
 };
 
-exports.printOrder = (req) => {
+exports.printOrder = async (req) => {
     const orderId = req.params.orderId;
     const filename = "invoice-".concat(orderId, ".pdf");
     const filepath = path.join("data", "invoices", filename);
+
+    const templatePath = path.join("views", "pdf",);
+
+    let order = null;
+    let html = null;
+    try {
+        order = await Order.findById(orderId);
+        html = await ejs.renderFile(path.join(__dirname, '..', 'views', 'pdf', "order-template.ejs"), {order: order});
+    } catch (err) {
+        Tools.logger.error(err);
+        return Promise.reject(err);
+    }
+    let options = {
+        format: "A3",
+        orientation: "portrait",
+        border: "10mm",
+        header: {
+            height: "45mm",
+            contents: `<H1 style="text-align: center;">Your Order - ${order._id}</H1>`
+        },
+        "footer": {
+            "height": "10mm",
+            "contents": {
+                first: '',
+                2: '', // Any page number is working. 1-based index
+                default: '<span style="color: #444;">{{page}}</span>/<span>{{pages}}</span>', // fallback value
+                last: ''
+            }
+        }
+    };
+    let document = {
+        html: html,
+        data: {
+            users: ""
+        },
+        path: filepath
+    };
+    return pdf.create(document, options).then(res => {
+        let result = {
+            file: fs.createReadStream(filepath),
+            filename: filename};
+        return Promise.resolve(result);
+    }).catch(error => {
+        return Promise.reject(error);
+    });
     /*return new Promise((resolve, reject) => {
         fs.readFile(filepath, (err, data) => {
             if (err) {
@@ -100,8 +148,4 @@ exports.printOrder = (req) => {
             return resolve(response);
         });
     });*/
-    return {
-        file: fs.createReadStream(filepath),
-        filename: filename
-    };
 };
