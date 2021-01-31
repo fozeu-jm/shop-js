@@ -30,6 +30,7 @@
     "nodemailer-sendgrid-transport": "^0.2.0",
     "pdf-creator-node": "^1.4.2",
     "pdfkit": "^0.11.0",
+    "stripe": "^8.132.0",
     "winston": "^3.3.3"
   }
 }

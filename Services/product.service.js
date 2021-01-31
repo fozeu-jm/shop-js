@@ -79,7 +79,7 @@ exports.updateProduct = (req) => {
 };
 
 exports.DeleteProduct = (req) => {
-    const prodId = req.body.productId;
+    const prodId = req.params.productId;
     return Product.findById(prodId).then(product => {
         return Product.findByIdAndRemove(prodId).then(res => {
             deleter.deleteFile(product.imageUrl);

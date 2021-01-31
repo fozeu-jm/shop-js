@@ -3,7 +3,8 @@ const productService = require('../Services/product.service');
 const userService = require('../Services/user.service');
 const PDFDocument = require("pdfkit");
 const config = require("../util/config");
-
+const path = require("path");
+const stripe = require("stripe")('sk_test_51IFlPOG15lWG0HoWtA9UoznCvEYAJd2c7mtl6tJjuoIwU02tIynEEAUdTKKvtChmtj21tN7XI3xp4VxV4Idl678e00vwPFuQnO');
 exports.getProducts = async (req, res, next) => {
     const totalItems = await Product.find().countDocuments();
     const page = parseInt(req.query.page || "1");
@@ -96,7 +97,7 @@ exports.postCartDeleteProduct = (req, res, next) => {
     }).catch(err => console.log(err));
 };
 
-exports.postOrder = (req, res, next) => {
+exports.getCheckoutSuccess = (req, res, next) => {
     userService.placeOrder(req.user).then(result => {
         res.redirect('/orders');
     }).catch(err => console.log(err));
@@ -120,3 +121,43 @@ exports.printOrder = (req, res, next) => {
         result.file.pipe(res);
     }).catch(err => console.log(err));
 };
+
+exports.getCheckOut = (req, res, next) => {
+    userService.getCartContent(req.user)
+        .then(products => {
+            let total = 0;
+            products.forEach(p => {
+                total += p.quantity * p.price;
+            });
+            stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: products.map(p => {
+                    return {
+                        price_data: {
+                            currency: 'eur',
+                            product_data: {
+                                name: p.title,
+                                /*images: [req.protocol + '://' + req.get('host') + products[0].imageUrl.split("\\").join("/")],*/
+                            },
+                            unit_amount: p.price * 100,
+                        },
+                        quantity: p.quantity,
+                    };
+                }),
+                mode: 'payment',
+                success_url: req.protocol + '://' + req.get('host') + '/checkout/success',
+                cancel_url: req.protocol + '://' + req.get('host') + '/checkout/cancel'
+            }).then(session => {
+                res.render('shop/checkout', {
+                    path: '/checkout',
+                    pageTitle: 'Checkout',
+                    products: products,
+                    sessionId: session,
+                    totalPrice: total,
+                    isAuthenticated: req.session.isLoggedIn || false
+                });
+            }).catch(err => {
+                console.log(err);
+            });
+        }).catch(err => console.log(err));
+}
