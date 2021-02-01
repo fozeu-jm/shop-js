@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2
+        }
+
+        th {
+            background-color: black;
+            color: white;
+        }
+    </style>
+    <title>Order</title>
+</head>
+<body>
+<table>
+    <tr>
+        <th>#</th>
+        <th>Item</th>
+        <th>Quantity</th>
+        <th>Price</th>
+    </tr>
+    <% let total = 0;%>
+    <% order.items.forEach((product, index) => { %>
+        <tr>
+            <td><%= index+1 %></td>
+            <td><%= product.title %></td>
+            <td><%= product.quantity %></td>
+            <% total += (product.quantity * product.price) %>
+            <td><%= product.quantity * product.price %></td>
+        </tr>
+    <% }); %>
+    <tr>
+        <td style="text-align: center; color: white; background-color: black;" colspan="3">Total</td>
+        <td><%= total %></td>
+    </tr>
+</table>
+
+</body>
+</html>
